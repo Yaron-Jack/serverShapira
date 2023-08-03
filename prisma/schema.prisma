@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  age           Int
+  name          String
+  role          ROLE     @default(BASIC)
+  createdAt     DateTime @default(now())
+  writtenPosts  Post[]   @relation("WrittenPosts")
+  // one-to-many
+  // each user can favorite many posts
+  // the "FavoritePosts" label in @relation prevents ambiguity
+  favoritePosts Post[]   @relation("FavoritePosts")
+  email         String   @unique
+
+  userPreference   UserPreference? @relation(fields: [userPreferenceId], references: [id])
+  // one-to-one
+  // each user can relate to one preference row
+  userPreferenceId String?         @unique
+
+  // block level attribute
+  // cannot have 2 users that have same age and same name
+  @@unique([age, name])
+  // index by email for sorting and querying
+  @@index([email])
+}
+
+model UserPreference {
+  id           String  @id @default(uuid())
+  emailUpdates Boolean
+  User         User?
+}
+
+model Post {
+  id            String     @id @default(uuid())
+  averageRating Float
+  preferences   Json
+  // the authorId in Post references  the id field of user
+  // WrittenPosts label added to disambiguate
+  author        User       @relation("WrittenPosts", fields: [authorId], references: [id])
+  authorId      String
+  favoritedBy   User?      @relation("FavoritePosts", fields: [favoritedById], references: [id])
+  favoritedById String?
+  updatedAt     DateTime   @updatedAt
+  categories    Category[]
+
+  // EXAMPLE:
+  // to make a composite id
+  // the authorId and title will be form unique id for this model
+  // @@id([title, authorId])
+}
+
+model Category {
+  name  String @unique
+  id    String @id @default(uuid())
+  posts Post[]
+}
+
+// to ensure values can only be a small amount of options
+enum ROLE {
+  BASIC
+  ADMIN
+}
