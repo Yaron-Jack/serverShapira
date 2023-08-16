@@ -11,16 +11,17 @@ datasource db {
 }
 
 model User {
-  id                    String        @id @default(uuid())
-  firstName             String        @default("")
-  lastName              String        @default("")
-  role                  ROLE          @default(BASIC)
-  createdAt             DateTime      @default(now())
-  accountBalance        Decimal       @default(0)
-  transactions          Transaction[]
-  email                 String        @unique
-  userLocalCompostStand CompostStand  @relation(fields: [CompostStandId], references: [CompostStandId])
-  CompostStandId        Int           @default(0)
+  id                      String          @id @default(uuid())
+  firstName               String          @default("")
+  lastName                String          @default("")
+  role                    ROLE            @default(BASIC)
+  createdAt               DateTime        @default(now())
+  accountBalance          Decimal         @default(0)
+  transactions            Transaction[]
+  email                   String          @unique
+  userLocalCompostStand   CompostStand?   @relation(fields: [userLocalCompostStandId], references: [CompostStandId])
+  userLocalCompostStandId Int?
+  CompostReport           CompostReport[]
 
   // index by email for sorting and querying
   @@index([email])
@@ -58,8 +59,10 @@ enum DRYMATTERPRESENT {
 }
 
 // one compost stand can have many reports
+// one compost stand can have many users
 model CompostStand {
   CompostStandId Int             @id
+  name           String
   Reports        CompostReport[]
   User           User[]
 }
@@ -72,4 +75,6 @@ model CompostReport {
   dryMatterPresent DRYMATTERPRESENT
   notes            String
   date             DateTime         @default(now())
+  user             User             @relation(fields: [userId], references: [id])
+  userId           String
 }
