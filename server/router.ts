@@ -1,13 +1,12 @@
 import { Router } from 'express'
-import { saveNewUser, getAllUsers, deleteAllusers, getUserById } from './controllers/users';
+import { getAllUsers, deleteAllusers, getUser } from './controllers/users';
 import { addCompostStand, getCompostStands } from './controllers/compostStands';
 
 const router = Router();
 
 // USER OPERATIONS
 router.get('/users', getAllUsers)
-router.post('/user', saveNewUser)
-router.post('/userById', getUserById)
+router.post('/user', getUser)
 
 
 // COMPOST STAND OPERATIONS

@@ -11,34 +11,39 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 
 
 
-export const saveNewUser = async (req: RequestBody<userReqObject>, res: Response) => {
-  const { firstName, lastName, email } = req.body;
+export const saveNewUser = async (req: RequestBody<userReqObject>) => {
+  const { firstName, lastName, phoneNumber } = req.body;
   try {
     const user = await prisma.user.create({
       data: {
-        email,
+        phoneNumber,
         firstName,
         lastName,
       },
     });
-    res.status(200).send(user);
+    return user;
   } catch (e) {
     console.log(e);
-    res.status(400).send(e);
+    return null;
   }
 };
 
-export const getUserById = async (req: RequestBody<{ id: string }>, res: Response) => {
-  const { id } = req.body;
+
+export const getUser = async (req: RequestBody<userReqObject>, res: Response) => {
+  const { phoneNumber } = req.body;
   try {
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: {
-        id: id
+        phoneNumber: phoneNumber
       }
     });
+    if (!user) {
+      user = await saveNewUser(req);
+    }
+
     res.status(200).send(user);
   } catch (e) {
-    res.send(400);
+    res.status(400);
   }
 }
 
