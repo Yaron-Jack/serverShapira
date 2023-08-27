@@ -18,13 +18,14 @@ model User {
   createdAt               DateTime        @default(now())
   accountBalance          Decimal         @default(0)
   transactions            Transaction[]
-  email                   String          @unique
+  email                   String?         @unique
   userLocalCompostStand   CompostStand?   @relation(fields: [userLocalCompostStandId], references: [CompostStandId])
   userLocalCompostStandId Int?
   CompostReport           CompostReport[]
+  phoneNumber             String          @unique
 
   // index by email for sorting and querying
-  @@index([email])
+  @@index([phoneNumber])
 }
 
 // each transaction has multiple users associated with it
