@@ -5,7 +5,11 @@ import { prisma } from '../index';
 type RequestBody<T> = Request<{}, {}, T>;
 
 export const getAllUsers = async (_req: Request, res: Response) => {
-  const users = await prisma.user.findMany();
+  const users = await prisma.user.findMany({
+    include: {
+      transactions: true
+    }
+  });
   res.json(users);
 };
 
@@ -27,7 +31,6 @@ export const saveNewUser = async (req: RequestBody<userReqObject>) => {
     return null;
   }
 };
-
 
 export const getUser = async (req: RequestBody<userReqObject>, res: Response) => {
   const { phoneNumber } = req.body;
