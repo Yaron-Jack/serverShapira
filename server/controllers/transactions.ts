@@ -11,14 +11,35 @@ export const getAllTransactions = async (_req: Request, res: Response) => {
 
 
 export const saveNewTransaction = async (req: RequestBody<TransactionDTO>, res: Response) => {
-  const transaction = req.body
-  const result = await prisma.transaction.create({
-    data: {
-      ...transaction,
-      users: {
-        connect: [{ id: transaction.recipientId }, { id: transaction.purchaserId }],
+  const transaction = req.body;
+  // TODO check balance is adequate for transaction
+  try {
+    const result = await prisma.transaction.create({
+      data: {
+        ...transaction,
+        users: {
+          connect: [{ id: transaction.recipientId }, { id: transaction.purchaserId }],
+        },
       },
-    },
-  })
-  res.json(result)
+    })
+
+    await prisma.user.update({
+      where: {
+        id: transaction.recipientId
+      },
+      data: { accountBalance: { increment: transaction.amount } },
+    })
+
+    await prisma.user.update({
+      where: {
+        id: transaction.purchaserId
+      },
+      data: { accountBalance: { decrement: transaction.amount } },
+    })
+
+    res.json(result)
+  } catch (e) {
+    console.log(e)
+  }
+
 }
