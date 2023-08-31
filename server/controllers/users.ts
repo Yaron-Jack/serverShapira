@@ -24,6 +24,9 @@ export const saveNewUser = async (req: RequestBody<userReqObject>) => {
         firstName,
         lastName,
       },
+      include: {
+        transactions: true
+      }
     });
     return user;
   } catch (e) {
@@ -38,6 +41,9 @@ export const getUser = async (req: RequestBody<userReqObject>, res: Response) =>
     let user = await prisma.user.findUnique({
       where: {
         phoneNumber: phoneNumber
+      },
+      include: {
+        transactions: true
       }
     });
     if (!user) {
