@@ -23,6 +23,10 @@ export const getAllTransactions = async (_req: Request, res: Response) => {
 };
 
 
+/**
+ * @summary Saves a new transaction
+ * @description Returns { Transaction, users: [User, User] }
+ */
 export const saveNewTransaction = async (req: RequestBody<TransactionDTO>, res: Response) => {
   const transaction = req.body;
   try {
@@ -40,6 +44,9 @@ export const saveNewTransaction = async (req: RequestBody<TransactionDTO>, res: 
           connect: [{ id: recipientId }, { id: transaction.purchaserId }],
         },
       },
+      include: {
+        users: true
+      }
     })
 
     await prisma.user.update({
