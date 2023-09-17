@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "..";
-import { TransactionDTO } from "../../types/transactionTypes";
+import { DepositDTO, TransactionDTO } from "../../types/transactionTypes";
 
 type RequestBody<T> = Request<{}, {}, T>;
 
@@ -32,7 +32,7 @@ export const saveNewTransaction = async (req: RequestBody<TransactionDTO>, res: 
   try {
     const recipientId = await findUserIdByPhoneNumber(transaction.recipientPhoneNumber);
 
-  // TODO check balance is adequate for transaction
+    // TODO check balance is adequate for transaction
     const transactionDBResponse = await prisma.transaction.create({
       data: {
         category: transaction.category,
@@ -68,5 +68,45 @@ export const saveNewTransaction = async (req: RequestBody<TransactionDTO>, res: 
     console.log(e)
     res.status(400).json({ error: e.message })
   }
+}
 
+export const saveDeposit = async ({ body }: RequestBody<DepositDTO>, res: Response) => {
+
+  try {
+    if (!process.env.LIRA_SHAPIRA_USER_ID) {
+      throw new Error('no lira shapira user id available')
+    }
+    const newTransaction = await prisma.transaction.create({
+      data: {
+        amount: body.compostReport.depositWeight,
+        category: 'MISC',
+        purchaserId: process.env.LIRA_SHAPIRA_USER_ID,
+        recipientId: body.userId,
+        reason: 'Deposit',
+        users: {
+          connect: [{ id: process.env.LIRA_SHAPIRA_USER_ID }, { id: body.userId }],
+        },
+      },
+    })
+    // update user balance
+    await prisma.user.update({
+      where: {
+        id: body.userId
+      },
+      data: { accountBalance: { increment: body.compostReport.depositWeight } },
+    })
+
+    // save report to stand and reports
+    await prisma.compostReport.create({
+      data: {
+        ...body.compostReport,
+        userId: body.userId
+      }
+    })
+
+    res.status(201).send(newTransaction);
+  } catch (e) {
+    console.log(e)
+    res.status(400).send(e)
+  }
 }

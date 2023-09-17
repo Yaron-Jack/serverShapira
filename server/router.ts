@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { getAllUsers, deleteAllusers, getUser } from './controllers/users';
 import { addCompostStand, getCompostStands } from './controllers/compostStands';
-import { getAllTransactions, saveNewTransaction } from './controllers/transactions';
+import { getAllTransactions, saveNewTransaction, saveDeposit } from './controllers/transactions';
 
 const router = Router();
 
@@ -17,6 +17,7 @@ router.post('/compostStand', addCompostStand)
 // TRANSACTIONS
 router.get('/transactions', getAllTransactions)
 router.post('/saveTransaction', saveNewTransaction)
+router.post('/deposit', saveDeposit)
 
 // CLEANUP
 router.delete('/users', deleteAllusers)

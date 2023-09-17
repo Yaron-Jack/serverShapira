@@ -22,7 +22,11 @@ export const addCompostStand = async (req: RequestBody<compostStandReqObject>, r
 
 export const getCompostStands = async (_req: Request, res: Response) => {
   try {
-    const stands = await prisma.compostStand.findMany();
+    const stands = await prisma.compostStand.findMany({
+      include: {
+        Reports: true
+      }
+    });
     res.status(200).send(stands);
   } catch (e) {
     console.log(e);
