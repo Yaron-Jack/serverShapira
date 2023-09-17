@@ -65,17 +65,17 @@ model CompostStand {
   CompostStandId Int             @id
   name           String
   Reports        CompostReport[]
-  User           User[]
+  Users          User[]
 }
 
 model CompostReport {
-  compostStandId   Int              @unique
-  compostStand     CompostStand     @relation(fields: [compostStandId], references: [CompostStandId])
+  compostStandId   Int               @unique
+  compostStand     CompostStand      @relation(fields: [compostStandId], references: [CompostStandId])
   depositWeight    Decimal
-  compostSmell     Boolean
-  dryMatterPresent DRYMATTERPRESENT
-  notes            String
-  date             DateTime         @default(now())
-  user             User             @relation(fields: [userId], references: [id])
+  compostSmell     Boolean?
+  dryMatterPresent DRYMATTERPRESENT?
+  notes            String?
+  date             DateTime          @default(now())
+  user             User              @relation(fields: [userId], references: [id])
   userId           String
 }
