@@ -64,7 +64,7 @@ export const saveNewTransaction = async (req: RequestBody<TransactionDTO>, res: 
       }
     })
 
-
+/*get transaction status */
     res.status(201).json(transactionWithUsers);
   } catch (e: any) {
     console.log(e)
