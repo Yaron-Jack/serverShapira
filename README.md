@@ -16,4 +16,5 @@ To start work on the app:
 - create .env with local environment variables
 - run `npm i`
 - from the root of server repo, run `npm run devstart`
-
+- using the /user POST endpoint, create a user 'LIRA SHAPIRA'
+- add LIRA_SHAPIRA_USER_ID to your environment based on the response from the POST request
