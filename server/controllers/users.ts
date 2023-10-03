@@ -13,8 +13,6 @@ export const getAllUsers = async (_req: Request, res: Response) => {
   res.json(users);
 };
 
-
-
 export const saveNewUser = async (req: RequestBody<userReqObject>) => {
   const { firstName, lastName, phoneNumber } = req.body;
   try {
