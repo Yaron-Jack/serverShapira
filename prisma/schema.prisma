@@ -38,6 +38,7 @@ model Transaction {
   purchaserId String
   recipientId String
   reason      String
+  isRequest   Boolean  @default(false)
 }
 
 enum Category {

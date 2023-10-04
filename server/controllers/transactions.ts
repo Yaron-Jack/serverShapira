@@ -2,21 +2,9 @@ import { Request, Response } from "express";
 import { prisma } from "..";
 import { DepositDTO, TransactionDTO, TransactionWithUsers } from "../../types/transactionTypes";
 import { Category } from "@prisma/client";
+import { findUserIdByPhoneNumber } from "../utils";
 
 type RequestBody<T> = Request<{}, {}, T>;
-
-export const findUserIdByPhoneNumber = async (phoneNumber: string): Promise<string> => {
-  try {
-
-    const user = await prisma.user.findUnique({ where: { phoneNumber: phoneNumber } });
-    if (!user) {
-      throw new Error('User not found');
-    }
-    return user.id;
-  } catch (error: any) {
-    throw new Error(error);
-  }
-}
 
 export const getAllTransactions = async (_req: Request, res: Response) => {
   const transactions = await prisma.transaction.findMany();
