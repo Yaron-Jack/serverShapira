@@ -14,13 +14,14 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 };
 
 export const saveNewUser = async (req: RequestBody<userReqObject>) => {
-  const { firstName, lastName, phoneNumber } = req.body;
+  const { firstName, lastName, phoneNumber, email } = req.body;
   try {
     const user = await prisma.user.create({
       data: {
         phoneNumber,
         firstName,
         lastName,
+        ...(email && { email })
       },
       include: {
         transactions: true
