@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { getAllUsers, deleteAllusers, getUser } from './controllers/users';
 import {
+  addMultipleCompostStands,
   addCompostStand,
+  deleteAllCompostStands,
   getCompostStands,
   setUsersLocalStand,
 } from './controllers/compostStands';
@@ -29,5 +31,7 @@ router.post('/deposit', saveDeposit);
 
 // CLEANUP
 router.delete('/users', deleteAllusers);
+router.delete('/deleteAllCompostStands', deleteAllCompostStands)
+router.post('/addAllCompostStands', addMultipleCompostStands)
 
 export default router;

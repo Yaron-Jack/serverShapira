@@ -1,4 +1,4 @@
 export interface compostStandReqObject {
-  CompostStandId: number;
+  compostStandId: number;
   name: string;
 }

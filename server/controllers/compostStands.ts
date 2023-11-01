@@ -4,13 +4,31 @@ import { prisma } from "..";
 
 type RequestBody<T> = Request<{}, {}, T>;
 
+export const addMultipleCompostStands = async (req: RequestBody<compostStandReqObject[]>, res: Response) => {
+  try {
+    req.body.forEach(async (stand) => {
+      await prisma.compostStand.create({
+        data: {
+          compostStandId: stand.compostStandId,
+          name: stand.name
+        }
+      });
+      
+    })
+    res.status(200).send('ok');
+  } catch (e) {
+    res.status(400);
+    console.log(e);
+  }
+}
 
 export const addCompostStand = async (req: RequestBody<compostStandReqObject>, res: Response) => {
-  const { CompostStandId, name } = req.body;
+  const { compostStandId, name } = req.body;
   try {
     const stand = await prisma.compostStand.create({
       data: {
-        CompostStandId, name
+        compostStandId: compostStandId,
+        name
       }
     });
     res.status(200).send(stand);
@@ -24,7 +42,7 @@ export const getCompostStands = async (_req: Request, res: Response) => {
   try {
     const stands = await prisma.compostStand.findMany({
       include: {
-        Reports: true
+        reports: true
       }
     });
     res.status(200).send(stands);
@@ -51,6 +69,26 @@ export async function setUsersLocalStand(req: RequestBody<addUsersLocalStandReqO
       }
     })
     res.status(201).send(updatedUser);
+  } catch (e) {
+    console.log(e);
+    res.send(400)
+  }
+}
+
+export async function deleteAllCompostStands(_req: Request, res: Response) {
+  try {
+    await prisma.compostStand.deleteMany();
+    res.status(200).send('All compost stands deleted');
+  } catch (e) {
+    console.log(e);
+    res.send(400)
+  }
+}
+
+export async function deleteAllCompostReports(_req: Request, res: Response) {
+  try {
+    await prisma.compostReport.deleteMany();
+    res.status(200).send('All compost reports deleted');
   } catch (e) {
     console.log(e);
     res.send(400)
