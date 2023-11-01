@@ -21,9 +21,10 @@ export const standsIdToNameMap: Record<number, CompostStandName> = {
 };
 
 
-export const standsNameToIdMap = new Map<CompostStandName, number> {
+export const standsNameToIdMap: Record<CompostStandName, number> = {
     test: 1,
     hakaveret: 2,
+    food_forest_park_hahurshot:3,
     tel_hubez: 4,
     ginat_hahistadrut: 5,
     alexander_zaid: 6,

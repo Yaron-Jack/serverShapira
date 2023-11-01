@@ -1,4 +1,4 @@
-import { Transaction, User } from "@prisma/client";
+import { DRYMATTERPRESENT, Transaction, User } from "@prisma/client";
 import { CompostStandName } from "../constants/compostStands";
 
 export type TransactionDTO = Pick<Transaction, 'category' | 'amount' | 'purchaserId' | 'reason'> & {
@@ -11,7 +11,7 @@ export interface DepositDTO {
     depositWeight: number;
     binStatus?: 'empty' | 'full';
     compostSmell?: 'yes' | 'no';
-    dryMatter?: 'no' | 'some' | 'yes',
+    dryMatter?: DRYMATTERPRESENT,
     notes?: string;
     compostStand: CompostStandName
   }
