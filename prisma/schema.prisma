@@ -19,9 +19,9 @@ model User {
   accountBalance          Decimal         @default(0)
   transactions            Transaction[]
   email                   String?         @unique
-  userLocalCompostStand   CompostStand?   @relation(fields: [userLocalCompostStandId], references: [CompostStandId])
+  userLocalCompostStand   CompostStand?   @relation(fields: [userLocalCompostStandId], references: [compostStandId])
   userLocalCompostStandId Int?
-  CompostReport           CompostReport[]
+  compostReport           CompostReport[]
   phoneNumber             String          @unique
 
   // index by email for sorting and querying
@@ -64,16 +64,16 @@ enum DRYMATTERPRESENT {
 // one compost stand can have many reports
 // one compost stand can have many users
 model CompostStand {
-  CompostStandId Int             @id
+  compostStandId Int             @id
   name           String
-  Reports        CompostReport[]
-  Users          User[]
+  reports        CompostReport[]
+  users          User[]
 }
 
 model CompostReport {
   compostReportId  String            @id @default(uuid())
   compostStandId   Int              
-  compostStand     CompostStand      @relation(fields: [compostStandId], references: [CompostStandId])
+  compostStand     CompostStand      @relation(fields: [compostStandId], references: [compostStandId])
   depositWeight    Decimal
   compostSmell     Boolean?
   dryMatterPresent DRYMATTERPRESENT?
