@@ -4,13 +4,13 @@ import { prisma } from "..";
 
 type RequestBody<T> = Request<{}, {}, T>;
 
-
 export const addCompostStand = async (req: RequestBody<compostStandReqObject>, res: Response) => {
-  const { CompostStandId, name } = req.body;
+  const { compostStandId, name } = req.body;
   try {
     const stand = await prisma.compostStand.create({
       data: {
-        CompostStandId, name
+        CompostStandId: compostStandId,
+        name
       }
     });
     res.status(200).send(stand);

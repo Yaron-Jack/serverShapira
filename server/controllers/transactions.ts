@@ -3,6 +3,7 @@ import { prisma } from "..";
 import { DepositDTO, TransactionDTO, TransactionWithUsers } from "../../types/transactionTypes";
 import { Category } from "@prisma/client";
 import { findUserIdByPhoneNumber } from "../utils";
+import { CompostStandNames, standsIdToNameMap } from "../../constants/compostStands";
 
 type RequestBody<T> = Request<{}, {}, T>;
 
@@ -89,7 +90,7 @@ export const saveDeposit = async ({ body }: RequestBody<DepositDTO>, res: Respon
     // save report to stand and reports
     await prisma.compostReport.create({
       data: {
-        ...body.compostReport,
+        compostStandId: standsIdToNameMap[body.compostReport.compostStand]
         userId: body.userId
       }
     })
