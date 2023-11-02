@@ -13,7 +13,7 @@ export const getAllUsers = async (_req: Request, res: Response) => {
   res.json(users);
 };
 
-export const saveNewUser = async (req: RequestBody<userReqObject>) => {
+export const saveNewUser = async (req: RequestBody<userReqObject>, res: Response) => {
   const { firstName, lastName, phoneNumber, email } = req.body;
   try {
     const user = await prisma.user.create({
@@ -27,10 +27,9 @@ export const saveNewUser = async (req: RequestBody<userReqObject>) => {
         transactions: true
       }
     });
-    return user;
-  } catch (e) {
-    console.log(e);
-    return null;
+    res.status(200).send(user);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
   }
 };
 
@@ -46,12 +45,11 @@ export const getUser = async (req: RequestBody<userReqObject>, res: Response) =>
       }
     });
     if (!user) {
-      user = await saveNewUser(req);
+      throw new Error('User not found');
     }
-
     res.status(200).send(user);
-  } catch (e) {
-    res.status(400);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
   }
 }
 

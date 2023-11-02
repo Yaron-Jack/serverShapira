@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllUsers, deleteAllusers, getUser } from './controllers/users';
+import { getAllUsers, deleteAllusers, getUser, saveNewUser } from './controllers/users';
 import {
   addMultipleCompostStands,
   addCompostStand,
@@ -18,6 +18,7 @@ const router = Router();
 // USER OPERATIONS
 router.get('/users', getAllUsers);
 router.post('/user', getUser);
+router.post('/register', saveNewUser);
 
 // COMPOST STAND OPERATIONS
 router.get('/compostStands', getCompostStands);
