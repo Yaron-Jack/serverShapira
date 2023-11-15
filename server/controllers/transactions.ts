@@ -105,3 +105,18 @@ export const saveDeposit = async ({ body }: RequestBody<DepositDTO>, res: Respon
     res.status(400).send(e)
   }
 }
+
+export const transactionStats = async (_req: Request, res: Response) => {
+  try {
+    const groupTransactions = await prisma.transaction.groupBy({
+      by: ['category'],
+      _sum: {
+        amount: true
+      },
+    });
+
+    res.status(200).send({ groupTransactions });
+  } catch (e: any) {
+    res.status(400).send({ error: e.message })
+  }
+}

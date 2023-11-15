@@ -1,4 +1,5 @@
 import { prisma } from "..";
+import { UserWithTransactionsCount } from "../../types/userTypes";
 
 export const findUserIdByPhoneNumber = async (phoneNumber: string): Promise<string> => {
     try {
@@ -12,3 +13,9 @@ export const findUserIdByPhoneNumber = async (phoneNumber: string): Promise<stri
         throw new Error(error);
     }
 }
+
+export const convertUserWithTransactionsCountToCountArray = (userWithTransactionsCount: UserWithTransactionsCount[]): number[] => {
+    return userWithTransactionsCount.map(n => n._count.transactions);
+}
+
+export const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];

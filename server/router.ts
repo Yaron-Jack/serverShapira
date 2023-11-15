@@ -1,16 +1,18 @@
 import { Router } from 'express';
-import { getAllUsers, deleteAllusers, getUser, saveNewUser } from './controllers/users';
+import { getAllUsers, deleteAllusers, getUser, saveNewUser, deleteUserByPhoneNumber, userStats } from './controllers/users';
 import {
   addMultipleCompostStands,
   addCompostStand,
   deleteAllCompostStands,
   getCompostStands,
   setUsersLocalStand,
+  compostStandStats,
 } from './controllers/compostStands';
 import {
   getAllTransactions,
   saveNewTransaction,
   saveDeposit,
+  transactionStats,
 } from './controllers/transactions';
 
 const router = Router();
@@ -29,6 +31,11 @@ router.post('/setUsersLocalStand', setUsersLocalStand);
 router.get('/transactions', getAllTransactions);
 router.post('/saveTransaction', saveNewTransaction);
 router.post('/deposit', saveDeposit);
+
+// STATS
+router.get('/userStats', userStats)
+router.get('/transactionStats', transactionStats)
+router.get('/compostStandStats', compostStandStats)
 
 // CLEANUP
 router.delete('/users', deleteAllusers);
