@@ -1,80 +1,88 @@
-import { Request, Response } from "express";
-import { compostStandReqObject } from "../../types/compostStand";
-import { prisma } from "..";
-import { standsIdToNameMap } from "../../constants/compostStands";
-import { months } from "../utils";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Request, Response } from 'express';
+import { compostStandReqObject } from '../../types/compostStand';
+import { prisma } from '..';
+import { standsIdToNameMap } from '../../constants/compostStands';
+import { months } from '../utils';
+import { Decimal } from '@prisma/client/runtime/library';
 
 type RequestBody<T> = Request<{}, {}, T>;
 
-export const addMultipleCompostStands = async (req: RequestBody<compostStandReqObject[]>, res: Response) => {
+export const addMultipleCompostStands = async (
+  req: RequestBody<compostStandReqObject[]>,
+  res: Response
+) => {
   try {
     req.body.forEach(async (stand) => {
       await prisma.compostStand.create({
         data: {
           compostStandId: stand.compostStandId,
-          name: stand.name
-        }
+          name: stand.name,
+        },
       });
-      
-    })
+    });
     res.status(200).send('ok');
   } catch (e) {
     res.status(400);
     console.log(e);
   }
-}
+};
 
-export const addCompostStand = async (req: RequestBody<compostStandReqObject>, res: Response) => {
+export const addCompostStand = async (
+  req: RequestBody<compostStandReqObject>,
+  res: Response
+) => {
   const { compostStandId, name } = req.body;
   try {
     const stand = await prisma.compostStand.create({
       data: {
         compostStandId: compostStandId,
-        name
-      }
+        name,
+      },
     });
     res.status(200).send(stand);
   } catch (e) {
     res.status(400);
     console.log(e);
   }
-}
+};
 
 export const getCompostStands = async (_req: Request, res: Response) => {
   try {
     const stands = await prisma.compostStand.findMany({
       include: {
-        reports: true
-      }
+        reports: true,
+      },
     });
     res.status(200).send(stands);
   } catch (e) {
     console.log(e);
-    res.send(400)
+    res.send(400);
   }
-}
+};
 
 interface addUsersLocalStandReqObject {
   compostStandId: number;
   userId: string;
 }
 
-export async function setUsersLocalStand(req: RequestBody<addUsersLocalStandReqObject>, res: Response) {
+export async function setUsersLocalStand(
+  req: RequestBody<addUsersLocalStandReqObject>,
+  res: Response
+) {
   const { compostStandId, userId } = req.body;
   try {
     const updatedUser = await prisma.user.update({
       where: {
-        id: userId
+        id: userId,
       },
       data: {
-        userLocalCompostStandId: compostStandId
-      }
-    })
+        userLocalCompostStandId: compostStandId,
+      },
+    });
     res.status(201).send(updatedUser);
   } catch (e) {
     console.log(e);
-    res.send(400)
+    res.send(400);
   }
 }
 
@@ -84,7 +92,7 @@ export async function deleteAllCompostStands(_req: Request, res: Response) {
     res.status(200).send('All compost stands deleted');
   } catch (e) {
     console.log(e);
-    res.send(400)
+    res.send(400);
   }
 }
 
@@ -94,66 +102,68 @@ export async function deleteAllCompostReports(_req: Request, res: Response) {
     res.status(200).send('All compost reports deleted');
   } catch (e) {
     console.log(e);
-    res.send(400)
+    res.send(400);
   }
 }
 
 export const compostStandStats = async (req: Request, res: Response) => {
-  let period = 30
+  let period = 30;
   if (req.query.period && typeof req.query.period === 'string') {
     period = parseInt(req.query.period);
   }
   const dateQuery = {
     lte: new Date(),
-    gte: new Date(new Date().setDate(new Date().getDate() - period))
+    gte: new Date(new Date().setDate(new Date().getDate() - period)),
   };
-  
+
   try {
     const allReports = await prisma.compostReport.findMany();
-    const reportsByMonth: { [key: string]: { 
-      weight: Decimal;
-      count: number;
-    } } = {};
+    const reportsByMonth: {
+      [key: string]: {
+        weight: Decimal;
+        count: number;
+      };
+    } = {};
 
     for (let i = 0; i < allReports.length; i++) {
       const report = allReports[i];
-      const reportMonth = months[report.date.getMonth()]; 
+      const reportMonth = months[report.date.getMonth()];
       if (reportsByMonth[reportMonth]) {
         reportsByMonth[reportMonth] = {
           weight: reportsByMonth[reportMonth].weight.plus(report.depositWeight),
-          count: reportsByMonth[reportMonth].count++
-        }
+          count: reportsByMonth[reportMonth].count++,
+        };
       } else {
         reportsByMonth[reportMonth] = {
           weight: report.depositWeight,
-          count: 1
-        }
+          count: 1,
+        };
       }
-    };
+    }
     const groupStandsDepositWeights = await prisma.compostReport.groupBy({
       by: ['compostStandId'],
       _sum: {
-        depositWeight: true
+        depositWeight: true,
       },
       where: {
         NOT: {
-          userId: process.env.LIRA_SHAPIRA_USER_ID
+          userId: process.env.LIRA_SHAPIRA_USER_ID,
         },
-        date: dateQuery
-      }
+        date: dateQuery,
+      },
     });
 
-    const depositsWeightsByStands = groupStandsDepositWeights.map(s => {
+    const depositsWeightsByStands = groupStandsDepositWeights.map((s) => {
       return {
         id: s.compostStandId,
         name: standsIdToNameMap[s.compostStandId],
-        weight: s._sum.depositWeight
-      }
+        weight: s._sum.depositWeight,
+      };
     });
     // max age of 12 hours
-    res.header("Cache-Control", "max-age=43200");
+    res.header('Cache-Control', 'max-age=43200');
     res.status(200).send({ depositsWeightsByStands, period, reportsByMonth });
   } catch (e: any) {
-    res.status(400).send({ error: e.message })
+    res.status(400).send({ error: e.message });
   }
-}
+};

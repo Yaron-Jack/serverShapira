@@ -39,6 +39,7 @@ router.get('/compostStandStats', compostStandStats)
 
 // CLEANUP
 router.delete('/users', deleteAllusers);
+router.delete('/userByPhoneNumber', deleteUserByPhoneNumber);
 router.delete('/deleteAllCompostStands', deleteAllCompostStands)
 router.post('/addAllCompostStands', addMultipleCompostStands)
 
