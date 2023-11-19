@@ -7,6 +7,7 @@ import {
   getCompostStands,
   setUsersLocalStand,
   compostStandStats,
+  monthlyCompostStandStats,
 } from './controllers/compostStands';
 import {
   getAllTransactions,
@@ -36,6 +37,7 @@ router.post('/deposit', saveDeposit);
 router.get('/userStats', userStats)
 router.get('/transactionStats', transactionStats)
 router.get('/compostStandStats', compostStandStats)
+router.get('/monthlyCompostStandStats', monthlyCompostStandStats)
 
 // CLEANUP
 router.delete('/users', deleteAllusers);

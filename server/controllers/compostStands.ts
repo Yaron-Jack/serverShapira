@@ -106,6 +106,42 @@ export async function deleteAllCompostReports(_req: Request, res: Response) {
   }
 }
 
+export const monthlyCompostStandStats = async (req: Request, res: Response) => {
+  try {
+    const allReports = await prisma.compostReport.findMany();
+    const reportsByMonth: {
+      [key: string]: {
+        weight: Decimal;
+        count: number;
+        average?: number;
+      };
+    } = {};
+
+    for (let i = 0; i < allReports.length; i++) {
+      const report = allReports[i];
+      const reportMonth = months[report.date.getMonth()];
+      if (reportsByMonth[reportMonth]) {
+        reportsByMonth[reportMonth] = {
+          weight: reportsByMonth[reportMonth].weight.plus(report.depositWeight),
+          count: reportsByMonth[reportMonth].count + 1,
+        };
+      } else {
+        reportsByMonth[reportMonth] = {
+          weight: report.depositWeight,
+          count: 1,
+        };
+      }
+    }
+    Object.entries(reportsByMonth).forEach(([month, value] )=> {
+      reportsByMonth[month].average = value.weight.div(value.count).toDecimalPlaces(1).toNumber();
+    })
+
+    res.status(200).send({ reportsByMonth })
+  } catch (e: any) {
+    res.send(400).json({ error: e.message });
+  }
+} 
+
 export const compostStandStats = async (req: Request, res: Response) => {
   let period = 30;
   if (req.query.period && typeof req.query.period === 'string') {
@@ -117,29 +153,6 @@ export const compostStandStats = async (req: Request, res: Response) => {
   };
 
   try {
-    const allReports = await prisma.compostReport.findMany();
-    const reportsByMonth: {
-      [key: string]: {
-        weight: Decimal;
-        count: number;
-      };
-    } = {};
-
-    for (let i = 0; i < allReports.length; i++) {
-      const report = allReports[i];
-      const reportMonth = months[report.date.getMonth()];
-      if (reportsByMonth[reportMonth]) {
-        reportsByMonth[reportMonth] = {
-          weight: reportsByMonth[reportMonth].weight.plus(report.depositWeight),
-          count: reportsByMonth[reportMonth].count++,
-        };
-      } else {
-        reportsByMonth[reportMonth] = {
-          weight: report.depositWeight,
-          count: 1,
-        };
-      }
-    }
     const groupStandsDepositWeights = await prisma.compostReport.groupBy({
       by: ['compostStandId'],
       _sum: {
@@ -162,7 +175,7 @@ export const compostStandStats = async (req: Request, res: Response) => {
     });
     // max age of 12 hours
     res.header('Cache-Control', 'max-age=43200');
-    res.status(200).send({ depositsWeightsByStands, period, reportsByMonth });
+    res.status(200).send({ depositsWeightsByStands, period });
   } catch (e: any) {
     res.status(400).send({ error: e.message });
   }
