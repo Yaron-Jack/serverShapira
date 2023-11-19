@@ -72,6 +72,7 @@ interface userStatsRes {
   averageTransactionsPerUser: number;
   depositsPerUser: number[];
   period: number;
+  balanceCounts: any;
 }
 
 export const userStats = async (
@@ -102,7 +103,14 @@ export const userStats = async (
     const usersWithTransactionsCount = await prisma.user.findMany({
       select: {
         _count: {
-          select: { transactions: true },
+          select: {
+            transactions: {
+              where: {
+                createdAt: dateQuery,
+                category: Category.DEPOSIT,
+              },
+            },
+          },
         },
       },
       where: {
@@ -116,11 +124,17 @@ export const userStats = async (
     );
     const averageTransactionsPerUser =
       transactionsPerUser.reduce((a, b) => a + b) / transactionsPerUser.length;
+
     const usersWithDepositCount = await prisma.user.findMany({
       select: {
         _count: {
           select: {
-            transactions: { where: { category: Category.DEPOSIT } },
+            transactions: {
+              where: {
+                createdAt: dateQuery,
+                category: Category.DEPOSIT,
+              },
+            },
           },
         },
       },
@@ -135,6 +149,16 @@ export const userStats = async (
       usersWithDepositCount
     );
 
+    const rawBalanceCounts = await prisma.user.groupBy({
+      by: ['accountBalance'],
+      _count: {
+        _all: true,
+      },
+    })
+    const balanceCounts = rawBalanceCounts
+      .map(b => ({ count: b._count._all, balance: b. accountBalance.toNumber() }))
+      .sort((a, b) => b.balance > a.balance ? -1 : 1)
+
     // max age of 12 hours
     res.header('Cache-Control', 'max-age=43200');
     res.status(200).send({
@@ -144,12 +168,14 @@ export const userStats = async (
       depositsPerUser,
       newUserCount,
       period,
+      balanceCounts
     });
   } catch (e: any) {
     res.status(400).send({ error: e.message });
   }
 };
 
+// ___________________CLEANUP___________________CLEANUP___________________CLEANUP___________________
 export const deleteAllusers = async (_req: Request, res: Response) => {
   const { count } = await prisma.user.deleteMany();
   res.send(count);
