@@ -6,8 +6,7 @@ import {
   TransactionWithUsers,
 } from '../../types/transactionTypes';
 import { Category } from '@prisma/client';
-import { findUserIdByPhoneNumber } from '../utils';
-import { standsNameToIdMap } from '../../constants/compostStands';
+import { convertdepositDTOToCompostReportData, findUserIdByPhoneNumber } from '../utils';
 
 type RequestBody<T> = Request<{}, {}, T>;
 
@@ -92,6 +91,7 @@ export const saveDeposit = async (
         },
       },
     });
+
     // update user balance
     await prisma.user.update({
       where: {
@@ -100,16 +100,10 @@ export const saveDeposit = async (
       data: { accountBalance: { increment: body.compostReport.depositWeight } },
     });
 
+
     // save report to stand and reports
     await prisma.compostReport.create({
-      data: {
-        compostStandId: standsNameToIdMap[body.compostReport.compostStand],
-        depositWeight: body.compostReport.depositWeight,
-        compostSmell: body.compostReport.compostSmell === 'yes',
-        dryMatterPresent: body.compostReport.dryMatter,
-        notes: body.compostReport.notes,
-        userId: body.userId,
-      },
+      data: convertdepositDTOToCompostReportData(body)
     });
 
     res.status(201).send(newTransaction);
@@ -118,6 +112,42 @@ export const saveDeposit = async (
     res.status(400).send(e);
   }
 };
+
+// export const monthlyTransactionsStats = async (req: Request, res: Response) => {
+//   try {
+//     const allReports = await prisma.compostReport.findMany();
+//     const reportsByMonth: {
+//       [key: string]: {
+//         weight: Decimal;
+//         count: number;
+//         average?: number;
+//       };
+//     } = {};
+
+//     for (let i = 0; i < allReports.length; i++) {
+//       const report = allReports[i];
+//       const reportMonth = months[report.date.getMonth()];
+//       if (reportsByMonth[reportMonth]) {
+//         reportsByMonth[reportMonth] = {
+//           weight: reportsByMonth[reportMonth].weight.plus(report.depositWeight),
+//           count: reportsByMonth[reportMonth].count + 1,
+//         };
+//       } else {
+//         reportsByMonth[reportMonth] = {
+//           weight: report.depositWeight,
+//           count: 1,
+//         };
+//       }
+//     }
+//     Object.entries(reportsByMonth).forEach(([month, value] )=> {
+//       reportsByMonth[month].average = value.weight.div(value.count).toDecimalPlaces(1).toNumber();
+//     })
+
+//     res.status(200).send({ reportsByMonth })
+//   } catch (e: any) {
+//     res.send(400).json({ error: e.message });
+//   }
+// } 
 
 export const transactionStats = async (_req: Request, res: Response) => {
   try {

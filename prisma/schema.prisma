@@ -72,12 +72,16 @@ model CompostStand {
 
 model CompostReport {
   compostReportId  String            @id @default(uuid())
-  compostStandId   Int              
+  compostStandId   Int
   compostStand     CompostStand      @relation(fields: [compostStandId], references: [compostStandId])
   depositWeight    Decimal
   compostSmell     Boolean?
   dryMatterPresent DRYMATTERPRESENT?
+  bugs             Boolean?
+  scalesProblem    Boolean?
   notes            String?
+  full             Boolean?
+  cleanAndTidy     Boolean?
   date             DateTime          @default(now())
   user             User              @relation(fields: [userId], references: [id])
   userId           String

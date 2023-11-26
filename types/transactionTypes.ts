@@ -9,11 +9,15 @@ export interface DepositDTO {
   userId: string;
   compostReport: {
     depositWeight: number;
-    binStatus?: 'empty' | 'full';
-    compostSmell?: 'yes' | 'no';
     dryMatter?: DRYMATTERPRESENT,
     notes?: string;
     compostStand: CompostStandName
+    bugs?: boolean;             
+    scalesProblem?: boolean;    
+    full?: boolean;             
+    cleanAndTidy?: boolean;  
+    // TODO yes/no is legacy
+    compostSmell?: 'yes' | 'no' | boolean;
   }
 }
 
