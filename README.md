@@ -12,9 +12,18 @@ This is the backend for the new Lira Shapira App, a local eco-currency. Earn by 
 ## Join us!
 contributions welcome! 😊 
 To start work on the app:
+
+##### Requirements
+
+- Postgres DB instance
+- node v16 or higher
+
+##### Steps
 - fork & clone the repo.
-- create .env with local environment variables
+- create .env file from .env.template at base of project
 - run `npm i`
+- run `npm run seed`, this should result in output:
+  - LIRA_SHAPIRA_USER_ID:  2528b7df-ew04-4095-9ce9-4f3fe5cce23c
+  - copy this id to your .env
 - from the root of server repo, run `npm run devstart`
-- using the /user POST endpoint, create a user 'LIRA SHAPIRA'
-- add LIRA_SHAPIRA_USER_ID to your environment based on the response from the POST request
+- your server should be ready to accept requests
