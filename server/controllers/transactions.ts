@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import { prisma } from '..';
 import {
-  DepositDTO,
+  DepositDTO, HandleRequestDTO,
   TransactionDTO,
-  TransactionWithUsers,
 } from '../../types/transactionTypes';
-import { Category } from '@prisma/client';
-import { convertdepositDTOToCompostReportData, findUserIdByPhoneNumber } from '../utils';
+import { Category, Transaction } from '@prisma/client';
+import {convertdepositDTOToCompostReportData, findUserIdByPhoneNumber} from '../utils';
 
 type RequestBody<T> = Request<{}, {}, T>;
 
@@ -17,7 +16,7 @@ export const getAllTransactions = async (_req: Request, res: Response) => {
 
 /**
  * @summary Saves a new transaction
- * @description Returns { Transaction, users: [User, User] }
+ * @description Returns { Transaction, users: [User] }
  */
 export const saveNewTransaction = async (
   req: RequestBody<TransactionDTO>,
@@ -28,6 +27,36 @@ export const saveNewTransaction = async (
     const recipientId = await findUserIdByPhoneNumber(
       transaction.recipientPhoneNumber
     );
+    const transactionWithUsers =
+      await prisma.transaction.create({
+        data: {
+          category: transaction.category,
+          amount: transaction.amount,
+          purchaserId: transaction.purchaserId,
+          reason: transaction.reason,
+          recipientId,
+          isRequest: transaction.isRequest,
+          users: {
+            connect: [{ id: recipientId }, { id: transaction.purchaserId }],
+          },
+        },
+        include: {
+          users: {
+            select: {
+              firstName: true,
+              lastName: true
+            },
+            where: {
+              id: transaction.isRequest ? transaction.purchaserId : recipientId
+            }
+          },
+        },
+      });
+
+    if (transaction.isRequest) {
+      res.status(201).json(transactionWithUsers);
+      return;
+    }
 
     // TODO check balance is adequate for transaction
     await prisma.user.update({
@@ -43,23 +72,6 @@ export const saveNewTransaction = async (
       },
       data: { accountBalance: { decrement: transaction.amount } },
     });
-
-    const transactionWithUsers: TransactionWithUsers =
-      await prisma.transaction.create({
-        data: {
-          category: transaction.category,
-          amount: transaction.amount,
-          purchaserId: transaction.purchaserId,
-          reason: transaction.reason,
-          recipientId,
-          users: {
-            connect: [{ id: recipientId }, { id: transaction.purchaserId }],
-          },
-        },
-        include: {
-          users: true,
-        },
-      });
 
     res.status(201).json(transactionWithUsers);
   } catch (e: any) {
@@ -113,6 +125,54 @@ export const saveDeposit = async (
   }
 };
 
+export const handleRequest = async (
+  {body}: RequestBody<HandleRequestDTO>,
+  res: Response
+) => {
+  const { transaction, isRequestAccepted } = body;
+  const transactionId = body.transaction.id;
+  let updatedTransaction: Transaction;
+  try {
+    if (isRequestAccepted) {
+      updatedTransaction = await prisma.transaction.update({
+        where: {
+          id: transactionId
+        },
+        data: {
+          isRequest: false
+        }
+      });
+
+      await prisma.user.update({
+        where: {
+          id: transaction.recipientId,
+        },
+        data: {accountBalance: {increment: transaction.amount}},
+      });
+
+      await prisma.user.update({
+        where: {
+          id: transaction.purchaserId,
+        },
+        data: {accountBalance: {decrement: transaction.amount}},
+      });
+    } else {
+      updatedTransaction = await prisma.transaction.delete({
+        where: {
+          id: transactionId
+        }
+      })
+    }
+
+    res.status(201).send({
+      ...updatedTransaction,
+      isRequest: false
+    });
+  } catch (e) {
+    res.status(400).send(e)
+  }
+}
+
 // export const monthlyTransactionsStats = async (req: Request, res: Response) => {
 //   try {
 //     const allReports = await prisma.compostReport.findMany();
@@ -147,7 +207,7 @@ export const saveDeposit = async (
 //   } catch (e: any) {
 //     res.send(400).json({ error: e.message });
 //   }
-// } 
+// }
 
 export const transactionStats = async (_req: Request, res: Response) => {
   try {
@@ -163,3 +223,4 @@ export const transactionStats = async (_req: Request, res: Response) => {
     res.status(400).send({ error: e.message });
   }
 };
+
