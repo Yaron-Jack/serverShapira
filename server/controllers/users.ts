@@ -19,6 +19,15 @@ export const getAllUsers = async (_req: Request, res: Response) => {
   res.json(users);
 };
 
+export const getUserByNumber = async (req: Request<{ phoneNumber: string }>, res: Response) => {
+  try {
+    const userId = await findUserIdByPhoneNumber(req.body.phoneNumber);
+    res.status(200).send({ userId });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+}
+
 export const saveNewUser = async (
   req: RequestBody<userReqObject>,
   res: Response

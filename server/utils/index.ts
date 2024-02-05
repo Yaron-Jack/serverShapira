@@ -9,7 +9,7 @@ export const findUserIdByPhoneNumber = async (phoneNumber: string): Promise<stri
 
         const user = await prisma.user.findUnique({ where: { phoneNumber: phoneNumber } });
         if (!user) {
-            throw new Error('User not found');
+            throw new Error('No user exists for this number');
         }
         return user.id;
     } catch (error: any) {

@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { getAllUsers, deleteAllusers, getUser, saveNewUser, deleteUserByPhoneNumber, userStats } from './controllers/users';
+import {
+  getAllUsers,
+  deleteAllusers,
+  getUser,
+  saveNewUser,
+  deleteUserByPhoneNumber,
+  userStats,
+  getUserByNumber
+} from './controllers/users';
 import {
   addMultipleCompostStands,
   addCompostStand,
@@ -14,6 +22,7 @@ import {
   saveNewTransaction,
   saveDeposit,
   transactionStats,
+  handleRequest
 } from './controllers/transactions';
 
 const router = Router();
@@ -21,6 +30,7 @@ const router = Router();
 // USER OPERATIONS
 router.get('/users', getAllUsers);
 router.post('/user', getUser);
+router.post('/userIdByNumber', getUserByNumber);
 router.post('/register', saveNewUser);
 
 // COMPOST STAND OPERATIONS
@@ -32,6 +42,7 @@ router.post('/setUsersLocalStand', setUsersLocalStand);
 router.get('/transactions', getAllTransactions);
 router.post('/saveTransaction', saveNewTransaction);
 router.post('/deposit', saveDeposit);
+router.put('/handleRequest', handleRequest);
 
 // STATS
 router.get('/userStats', userStats)
