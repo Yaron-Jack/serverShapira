@@ -102,6 +102,17 @@ export const saveDeposit = async (
           ],
         },
       },
+      include: {
+        users: {
+          select: {
+            firstName: true,
+            lastName: true
+          },
+          where: {
+            id: process.env.LIRA_SHAPIRA_USER_ID
+          }
+        },
+      },
     });
 
     // update user balance
