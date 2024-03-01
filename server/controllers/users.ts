@@ -115,7 +115,7 @@ export const userStats = async (
   };
 
   try {
-    const userCount = await prisma.user.count();
+    const userCount = await prisma.user.count() - 1;
 
     const newUserCount = await prisma.user.count({
       where: {
