@@ -98,6 +98,13 @@ interface userStatsRes {
   balanceCounts: any;
 }
 
+/*
+ * returns
+ * userCount: Count of all users currently registered
+ * newUserCount: Count of all users who registered in given period
+ * transactionsPerUser: array of numbers each representing the number of transactions by a user
+ * balanceCounts: represents spread of balances in the user pool
+ */
 export const userStats = async (
   req: Request<{ period?: string }>,
   res: Response<userStatsRes | ErrorRes>
@@ -130,7 +137,6 @@ export const userStats = async (
             transactions: {
               where: {
                 createdAt: dateQuery,
-                category: Category.DEPOSIT,
               },
             },
           },
