@@ -168,11 +168,13 @@ export const compostStandStats = async (req: Request, res: Response) => {
 
     const depositsWeightsByStands = groupStandsDepositWeights.map((s) => {
       return {
-        id: s.compostStandId,
+        id: s.compostStandId.toString(),
         name: standsIdToNameMap[s.compostStandId],
-        weight: s._sum.depositWeight,
+        weight: s._sum.depositWeight ? s._sum.depositWeight.toNumber() : 0,
       };
-    });
+    })
+      .sort((compostStandA, compostStandB) => compostStandA.weight < compostStandB.weight ? 1 : -1)
+
     // max age of 12 hours
     res.header('Cache-Control', 'max-age=43200');
     res.status(200).send({ depositsWeightsByStands, period });
