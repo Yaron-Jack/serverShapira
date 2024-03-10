@@ -19,10 +19,12 @@ model User {
   accountBalance          Decimal         @default(0)
   transactions            Transaction[]
   email                   String?         @unique
-  userLocalCompostStand   CompostStand?   @relation(fields: [userLocalCompostStandId], references: [compostStandId])
+  userLocalCompostStand   CompostStand?   @relation(fields: [userLocalCompostStandId], references: [compostStandId], name: "StandUsers")
   userLocalCompostStandId Int?
   compostReport           CompostReport[]
   phoneNumber             String          @unique
+  adminCompostStand       CompostStand?   @relation(fields: [adminCompostStandId], references: [compostStandId], name: "StandAdmins")
+  adminCompostStandId     Int?
 
   // index by email for sorting and querying
   @@index([phoneNumber])
@@ -67,7 +69,8 @@ model CompostStand {
   compostStandId Int             @id
   name           String
   reports        CompostReport[]
-  users          User[]
+  users          User[]          @relation("StandUsers")
+  admins         User[]          @relation("StandAdmins")
 }
 
 model CompostReport {
