@@ -95,6 +95,7 @@ interface userStatsRes {
   averageTransactionsPerUser: number;
   depositsPerUser: number[];
   period: number;
+  totalCoins: number;
   balanceCounts: any;
 }
 
@@ -129,6 +130,16 @@ export const userStats = async (
         createdAt: dateQuery,
       },
     });
+
+
+    const users = await prisma.user.findMany({
+      where: {
+        NOT: {
+          id: process.env.LIRA_SHAPIRA_USER_ID
+        }
+      }
+    })
+    const totalCoins = users.reduce((acc, cur) => acc + cur.accountBalance.toNumber(), 0)
 
     const usersWithTransactionsCount = await prisma.user.findMany({
       select: {
@@ -197,7 +208,8 @@ export const userStats = async (
       depositsPerUser,
       newUserCount,
       period,
-      balanceCounts
+      balanceCounts,
+      totalCoins
     });
   } catch (e: any) {
     res.status(400).send({ error: e.message });
