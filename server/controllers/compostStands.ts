@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { compostStandReqObject } from '../../types/compostStand';
+import { AddUsersLocalStandReqObject, CompostStandAdminsReq, CompostStandReqObject } from '../../types/compostStand';
 import { prisma } from '..';
 import { standsIdToNameMap } from '../../constants/compostStands';
 import { months } from '../utils';
@@ -8,7 +8,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 type RequestBody<T> = Request<{}, {}, T>;
 
 export const addMultipleCompostStands = async (
-  req: RequestBody<compostStandReqObject[]>,
+  req: RequestBody<CompostStandReqObject[]>,
   res: Response
 ) => {
   try {
@@ -28,7 +28,7 @@ export const addMultipleCompostStands = async (
 };
 
 export const addCompostStand = async (
-  req: RequestBody<compostStandReqObject>,
+  req: RequestBody<CompostStandReqObject>,
   res: Response
 ) => {
   const { compostStandId, name } = req.body;
@@ -51,6 +51,7 @@ export const getCompostStands = async (_req: Request, res: Response) => {
     const stands = await prisma.compostStand.findMany({
       include: {
         reports: true,
+        admins: true,
       },
     });
     res.status(200).send(stands);
@@ -60,13 +61,9 @@ export const getCompostStands = async (_req: Request, res: Response) => {
   }
 };
 
-interface addUsersLocalStandReqObject {
-  compostStandId: number;
-  userId: string;
-}
 
 export async function setUsersLocalStand(
-  req: RequestBody<addUsersLocalStandReqObject>,
+  req: RequestBody<AddUsersLocalStandReqObject>,
   res: Response
 ) {
   const { compostStandId, userId } = req.body;
@@ -85,6 +82,8 @@ export async function setUsersLocalStand(
     res.send(400);
   }
 }
+
+// ____________________CLEANUP____________________CLEANUP____________________CLEANUP____________________
 
 export async function deleteAllCompostStands(_req: Request, res: Response) {
   try {
@@ -106,6 +105,7 @@ export async function deleteAllCompostReports(_req: Request, res: Response) {
   }
 }
 
+// ____________________STATS____________________STATS____________________STATS____________________
 export const monthlyCompostStandStats = async (req: Request, res: Response) => {
   try {
     const allReports = await prisma.compostReport.findMany();
@@ -132,7 +132,7 @@ export const monthlyCompostStandStats = async (req: Request, res: Response) => {
         };
       }
     }
-    Object.entries(reportsByMonth).forEach(([month, value] )=> {
+    Object.entries(reportsByMonth).forEach(([month, value]) => {
       reportsByMonth[month].average = value.weight.div(value.count).toDecimalPlaces(1).toNumber();
     })
 
@@ -140,7 +140,7 @@ export const monthlyCompostStandStats = async (req: Request, res: Response) => {
   } catch (e: any) {
     res.send(400).json({ error: e.message });
   }
-} 
+}
 
 export const compostStandStats = async (req: Request, res: Response) => {
   let period = 30;
