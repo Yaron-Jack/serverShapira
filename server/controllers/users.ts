@@ -128,6 +128,9 @@ export const userStats = async (
     const newUserCount = await prisma.user.count({
       where: {
         createdAt: dateQuery,
+        NOT: {
+          id: process.env.LIRA_SHAPIRA_USER_ID
+        }
       },
     });
 
