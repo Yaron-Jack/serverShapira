@@ -220,16 +220,43 @@ export const handleRequest = async (
 //   }
 // }
 
-export const transactionStats = async (_req: Request, res: Response) => {
+export const transactionStats = async (req: Request, res: Response) => {
+  let period = 30;
+  if (req.query.period && typeof req.query.period === 'string') {
+    period = parseInt(req.query.period);
+  }
+
+  const dateQuery = {
+    lte: new Date(),
+    // TODO make possible to set dynamically from query params
+    gte: new Date(new Date().setDate(new Date().getDate() - period)),
+  };
+
   try {
+    // TODO amount per transaction spread 
+    // TODO average amount per transaction 
+    
+
+    // TODO REMOVE
     const groupTransactions = await prisma.transaction.groupBy({
       by: ['category'],
       _sum: {
         amount: true,
       },
+      where: {
+        createdAt: dateQuery,
+        isRequest: false
+      }
     });
 
-    res.status(200).send({ groupTransactions });
+    const transactionAmountByCategory = groupTransactions.map(transaction => {
+      return {
+        category: transaction.category,
+        amount: transaction._sum.amount
+      }
+    })
+
+    res.status(200).send({ transactionAmountByCategory });
   } catch (e: any) {
     res.status(400).send({ error: e.message });
   }
