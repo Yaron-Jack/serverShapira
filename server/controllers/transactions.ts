@@ -5,11 +5,13 @@ import {
   TransactionDTO,
 } from '../../types/transactionTypes';
 import { Category, Transaction } from '@prisma/client';
-import {convertdepositDTOToCompostReportData, findUserIdByPhoneNumber} from '../utils';
+import { convertdepositDTOToCompostReportData, findUserIdByPhoneNumber } from '../utils';
+import { standsNameToIdMap } from '../../constants/compostStands';
+import { Decimal } from '@prisma/client/runtime/library';
 
 type RequestBody<T> = Request<{}, {}, T>;
 
-export const getAllTransactions = async (_req: Request, res: Response) => {
+export const getAllTransactions = async (_req: Request, res: Response<Transaction[]>) => {
   const transactions = await prisma.transaction.findMany();
   res.json(transactions);
 };
@@ -84,6 +86,11 @@ export const saveDeposit = async (
   { body }: RequestBody<DepositDTO>,
   res: Response
 ) => {
+
+  const netGained = body.compostReport.depositWeight * 0.9;
+  const tenPercent = body.compostReport.depositWeight * 0.1;
+  const compostStandId = standsNameToIdMap[body.compostReport.compostStand];
+
   try {
     if (!process.env.LIRA_SHAPIRA_USER_ID) {
       throw new Error('no lira shapira user id available');
@@ -115,6 +122,29 @@ export const saveDeposit = async (
       },
     });
 
+    const compostStandAdmins = await prisma.compostStand.findUnique({
+      where: {
+        compostStandId: compostStandId
+      },
+      select: {
+        admins: true
+      }
+    });
+
+    const numberOfAdmins = compostStandAdmins?.admins.length;
+    if (numberOfAdmins) {
+      const bonus = tenPercent / numberOfAdmins;
+      compostStandAdmins.admins.forEach(async admin => {
+        // update user balance
+        await prisma.user.update({
+          where: {
+            id: admin.id,
+          },
+          data: { accountBalance: { increment: bonus } },
+        });
+      });
+    }
+
     // update user balance
     await prisma.user.update({
       where: {
@@ -129,7 +159,7 @@ export const saveDeposit = async (
       data: convertdepositDTOToCompostReportData(body)
     });
 
-    res.status(201).send(newTransaction);
+    res.status(201).send({ ...newTransaction, amount: new Decimal(netGained) });
   } catch (e) {
     console.log(e);
     res.status(400).send(e);
@@ -137,7 +167,7 @@ export const saveDeposit = async (
 };
 
 export const handleRequest = async (
-  {body}: RequestBody<HandleRequestDTO>,
+  { body }: RequestBody<HandleRequestDTO>,
   res: Response
 ) => {
   const { transaction, isRequestAccepted } = body;
@@ -158,14 +188,14 @@ export const handleRequest = async (
         where: {
           id: transaction.recipientId,
         },
-        data: {accountBalance: {increment: transaction.amount}},
+        data: { accountBalance: { increment: transaction.amount } },
       });
 
       await prisma.user.update({
         where: {
           id: transaction.purchaserId,
         },
-        data: {accountBalance: {decrement: transaction.amount}},
+        data: { accountBalance: { decrement: transaction.amount } },
       });
     } else {
       updatedTransaction = await prisma.transaction.delete({
@@ -233,9 +263,9 @@ export const transactionStats = async (req: Request, res: Response) => {
   };
 
   try {
-    // TODO amount per transaction spread 
-    // TODO average amount per transaction 
-    
+    // TODO amount per transaction spread
+    // TODO average amount per transaction
+
 
     // TODO REMOVE
     const groupTransactions = await prisma.transaction.groupBy({

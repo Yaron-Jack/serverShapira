@@ -4,12 +4,7 @@ export interface CompostStandReqObject {
 }
 
 export interface CompostStandAdminsReq {
-  userIds: string[];
-  compostStandId: number;
-}
-
-export interface AddCompostStandAdminReq {
-  userId: string;
+  userIds: string;
   compostStandId: number;
 }
 

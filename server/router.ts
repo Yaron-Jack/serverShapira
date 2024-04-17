@@ -24,7 +24,7 @@ import {
   transactionStats,
   handleRequest
 } from './controllers/transactions';
-import { setCompostStandAdmins, getAllCompostStandAdmins, removeCompostAdmins, addCompostStandAdmin } from './controllers/compostStandAdmins';
+import { getAllCompostStandAdmins, removeCompostStandAdmin, addCompostStandAdmin } from './controllers/compostStandAdmins';
 
 const router = Router();
 
@@ -40,8 +40,7 @@ router.post('/compostStand', addCompostStand);
 router.post('/setUsersLocalStand', setUsersLocalStand);
 
 router.get('/getAllCompostStandAdmins', getAllCompostStandAdmins);
-router.post('/setCompostStandAdmins', setCompostStandAdmins);
-router.post('/removeCompostAdmins', removeCompostAdmins);
+router.post('/removeCompostStandAdmin', removeCompostStandAdmin);
 router.post('/addCompostStandAdmin', addCompostStandAdmin);
 
 // TRANSACTIONS
