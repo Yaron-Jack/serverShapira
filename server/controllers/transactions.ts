@@ -87,6 +87,7 @@ export const saveDeposit = async (
   res: Response
 ) => {
 
+  // TODO ROUND TO 1dp
   const netGained = body.compostReport.depositWeight * 0.9;
   const tenPercent = body.compostReport.depositWeight * 0.1;
   const compostStandId = standsNameToIdMap[body.compostReport.compostStand];
@@ -97,7 +98,7 @@ export const saveDeposit = async (
     }
     const newTransaction = await prisma.transaction.create({
       data: {
-        amount: body.compostReport.depositWeight,
+        amount: netGained,
         category: Category.DEPOSIT,
         purchaserId: process.env.LIRA_SHAPIRA_USER_ID,
         recipientId: body.userId,
@@ -150,7 +151,7 @@ export const saveDeposit = async (
       where: {
         id: body.userId,
       },
-      data: { accountBalance: { increment: body.compostReport.depositWeight } },
+      data: { accountBalance: { increment: netGained } },
     });
 
 
