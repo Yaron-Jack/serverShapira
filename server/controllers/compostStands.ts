@@ -158,6 +158,12 @@ export const compostStandStats = async (req: Request, res: Response) => {
       _sum: {
         depositWeight: true,
       },
+      _avg: {
+        depositWeight: true
+      },
+      _count: {
+        depositWeight: true
+      },
       where: {
         NOT: {
           userId: process.env.LIRA_SHAPIRA_USER_ID,
@@ -166,18 +172,23 @@ export const compostStandStats = async (req: Request, res: Response) => {
       },
     });
 
-    const depositsWeightsByStands = groupStandsDepositWeights.map((s) => {
+
+    const depositsWeightsByStands = groupStandsDepositWeights.map((stand) => {
       return {
-        id: s.compostStandId.toString(),
-        name: standsIdToNameMap[s.compostStandId],
-        weight: s._sum.depositWeight ? s._sum.depositWeight.toNumber() : 0,
+        id: stand.compostStandId.toString(),
+        name: standsIdToNameMap[stand.compostStandId],
+        depositWeightSum: stand._sum.depositWeight ? stand._sum.depositWeight.toNumber() : 0,
+        averageDepositWeight: stand._avg.depositWeight ? stand._avg.depositWeight.toDP(2).toNumber() : 0,
+        depositCount: stand._count.depositWeight ? stand._count.depositWeight : 0
       };
     })
-      .sort((compostStandA, compostStandB) => compostStandA.weight < compostStandB.weight ? 1 : -1)
+      .sort((compostStandA, compostStandB) => compostStandA.depositWeightSum < compostStandB.depositWeightSum ? 1 : -1)
+
+    const totalDeposits = depositsWeightsByStands.reduce((acc, cur) => cur.depositCount + acc, 0);
 
     // max age of 12 hours
     res.header('Cache-Control', 'max-age=43200');
-    res.status(200).send({ depositsWeightsByStands, period });
+    res.status(200).send({ depositsWeightsByStands, period, totalDeposits });
   } catch (e: any) {
     res.status(400).send({ error: e.message });
   }
