@@ -25,6 +25,7 @@ import {
   handleRequest
 } from './controllers/transactions';
 import { getAllCompostStandAdmins, removeCompostStandAdmin, addCompostStandAdmin } from './controllers/compostStandAdmins';
+import { addAttendee, addEvent, getAllEvents } from './controllers/events';
 
 const router = Router();
 
@@ -48,6 +49,11 @@ router.get('/transactions', getAllTransactions);
 router.post('/saveTransaction', saveNewTransaction);
 router.post('/deposit', saveDeposit);
 router.put('/handleRequest', handleRequest);
+
+// EVENTS
+router.get('/events', getAllEvents);
+router.post('/addEvent', addEvent);
+router.post('/addAttendee', addAttendee);
 
 // STATS
 router.get('/userStats', userStats)
