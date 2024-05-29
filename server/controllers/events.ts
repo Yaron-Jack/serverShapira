@@ -78,3 +78,15 @@ export const getAllEvents = async (_req: Request<Event>, res: Response) => {
 
   }
 }
+
+export const getLocations = async (_req: Request, res: Response) => {
+  try {
+    const locations = await prisma.location.findMany();
+    res.status(200).send(locations);
+  }
+  catch (e: any) {
+    console.log(e);
+    res.status(400).json({ error: e.message });
+
+  }
+}
