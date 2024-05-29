@@ -113,7 +113,8 @@ model Location {
   long    Float?
   address String?
   link    String?
-  Event   Event?
+  Event   Event[]
+  eventId String?
 }
 
 model Event {
@@ -124,5 +125,5 @@ model Event {
   description String
   attendees   Attendee[] @relation(fields: [], references: [])
   location    Location   @relation(fields: [locationId], references: [id])
-  locationId  String     @unique
+  locationId  String
 }
