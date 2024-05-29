@@ -2,23 +2,35 @@ import { Request, Response } from "express"
 import { AttendeeRole, Event } from '@prisma/client';
 import { prisma } from "..";
 
-export const addEvent = async (req: Request<Event>, res: Response) => {
-  const reqEvent: Event = req.body;
+interface EventDTO {
+  startDate: string;
+  endDate: string;
+  title: string;
+  description: string;
+  location: { id: string }
+}
+
+export const addEvent = async (req: Request<EventDTO>, res: Response) => {
+  const reqEvent: EventDTO = req.body;
 
   const newEvent = {
-    startDate: reqEvent.startDate,
-    endDate: reqEvent.endDate,
+    startDate: new Date(reqEvent.startDate),
+    endDate: new Date(reqEvent.endDate),
     title: reqEvent.title,
     description: reqEvent.description,
   }
 
   try {
     const event = await prisma.event.create({
+      include: {
+        attendees: true,
+        location: true
+      },
       data: {
         ...newEvent,
         location: {
           connect: {
-            id: reqEvent.locationId
+            id: reqEvent.location.id
           }
         }
       },
