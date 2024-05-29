@@ -67,7 +67,17 @@ export const getAllEvents = async (_req: Request<Event>, res: Response) => {
   try {
     const events = await prisma.event.findMany({
       include: {
-        attendees: true
+        location: true,
+        attendees: {
+          include: {
+            user: true
+          }
+        }
+      },
+      where: {
+        endDate: {
+          gte: new Date()
+        }
       }
     });
     res.status(200).send(events);
