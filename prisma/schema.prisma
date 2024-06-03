@@ -102,7 +102,7 @@ model Attendee {
   userId          String       @id
   role            AttendeeRole
   eventId         String
-  event           Event        @relation(fields: [eventId], references: [id])
+  event           Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   productsForSale String[]
 }
 
