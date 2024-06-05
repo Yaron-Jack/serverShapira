@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import { AttendeeRole, Event } from '@prisma/client';
 import { prisma } from "..";
+import { DateTime } from "luxon";
 
 interface EventDTO {
   startDate: string;
@@ -13,9 +14,12 @@ interface EventDTO {
 export const addEvent = async (req: Request<EventDTO>, res: Response) => {
   const reqEvent: EventDTO = req.body;
 
+  const luxonStartDateString = DateTime.fromISO(reqEvent.startDate).toString();
+  const luxonEndDateString = DateTime.fromISO(reqEvent.endDate).toString();
+
   const newEvent = {
-    startDate: new Date(reqEvent.startDate),
-    endDate: new Date(reqEvent.endDate),
+    startDate: luxonStartDateString,
+    endDate: luxonEndDateString,
     title: reqEvent.title,
     description: reqEvent.description,
   }
