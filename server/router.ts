@@ -25,6 +25,7 @@ import {
   handleRequest
 } from './controllers/transactions';
 import { getAllCompostStandAdmins, removeCompostStandAdmin, addCompostStandAdmin } from './controllers/compostStandAdmins';
+import { checkVerify, startVerify } from './controllers/twilio';
 
 const router = Router();
 
@@ -48,6 +49,9 @@ router.get('/transactions', getAllTransactions);
 router.post('/saveTransaction', saveNewTransaction);
 router.post('/deposit', saveDeposit);
 router.put('/handleRequest', handleRequest);
+// TWILIO
+router.post('/startVerify', startVerify);
+router.post('/checkVerify', checkVerify);
 
 // STATS
 router.get('/userStats', userStats)
