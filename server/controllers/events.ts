@@ -99,7 +99,7 @@ export const getAllEvents = async (_req: Request, res: Response) => {
   }
 }
 
-export const getUpcomingEvents = async (_req: Request<Event>, res: Response) => {
+export const getUpcomingEvents = async (_req: Request<any>, res: Response) => {
   try {
     const events = await prisma.event.findMany({
       include: {
@@ -139,30 +139,37 @@ export const getLocations = async (_req: Request, res: Response) => {
 
 export const deleteEvent = async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const deletedEvent = await prisma.event.delete({
+    await prisma.event.delete({
       where: {
-        id: req.body.id
+        id: req.body.id,
       }
     });
-    res.status(201).json(deletedEvent)
+    getUpcomingEvents(req, res);
+
   } catch (e: any) {
     console.log(e);
     res.status(400).json({ error: e.message })
   }
 }
 
-export const updateEvent = async (req: Request<Partial<Event>>, res: Response) => {
+export const updateEvent = async (req: Request<Event>, res: Response) => {
   try {
-    const updatedEvent = await prisma.event.update({
+    await prisma.event.update({
       where: {
         id: req.body.id
       },
       data: {
         ...req.body,
-        id: req.body.id
+        id: req.body.id,
+        location: {
+          update: {
+            ...req.body.location
+          }
+        }
       }
     });
-    res.status(201).json(updatedEvent)
+
+    getUpcomingEvents(req, res);
   } catch (e: any) {
     console.log(e);
     res.status(400).json({ error: e.message })

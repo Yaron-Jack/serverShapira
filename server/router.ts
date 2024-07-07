@@ -56,7 +56,7 @@ router.get('/events', getUpcomingEvents);
 router.get('/locations', getLocations);
 router.post('/addEvent', addEvent);
 router.post('/addAttendee', addAttendee);
-router.post('/deleteEvent', deleteEvent);
+router.delete('/deleteEvent', deleteEvent);
 router.post('/updateEvent', updateEvent);
 
 // STATS
