@@ -3,6 +3,8 @@ import { AttendeeRole, Event } from '@prisma/client';
 import { prisma } from "..";
 import { DateTime } from "luxon";
 
+type RequestBody<T> = Request<{}, {}, T>;
+
 interface EventDTO {
   startDate: string;
   endDate: string;
@@ -11,7 +13,7 @@ interface EventDTO {
   location: { id: string }
 }
 
-export const addEvent = async (req: Request<EventDTO>, res: Response) => {
+export const addEvent = async (req: RequestBody<EventDTO>, res: Response) => {
   const reqEvent: EventDTO = req.body;
 
   const luxonStartDateString = DateTime.fromISO(reqEvent.startDate).toString();
@@ -50,34 +52,89 @@ interface AddAttendeeArgs {
   attendee: {
     userId: string;
     role: AttendeeRole,
-    productsForSale?: string[]
+    productsForSale?: string[],
   };
   eventId: string
 }
 
-export const addAttendee = async (req: Request<AddAttendeeArgs>, res: Response) => {
+
+export const addAttendee = async (req: RequestBody<AddAttendeeArgs>, res: Response) => {
+  const { attendee, eventId } = req.body;
+
   try {
-    const newEvent = await prisma.event.update({
+    const existingAttendee = await prisma.attendee.findUnique({
       where: {
-        id: req.body.eventId
-      },
-      data: {
-        attendees: {
-          create: {
-            ...req.body.attendee
-          }
+        userId_eventId: {
+          userId: attendee.userId,
+          eventId
         }
-      },
-      include: {
-        attendees: true
       }
-    })
-    res.status(201).send(newEvent);
+    });
+
+    if (existingAttendee) {
+      // Update the existing attendee
+      await prisma.attendee.update({
+        where: {
+          userId_eventId: {
+            userId: attendee.userId,
+            eventId
+          }
+        },
+        data: {
+          role: attendee.role,
+          productsForSale: attendee.productsForSale || []
+        }
+      });
+
+
+    } else {
+      await prisma.attendee.create({
+        data: {
+          userId: attendee.userId,
+          role: attendee.role,
+          productsForSale: attendee.productsForSale || [],
+          eventId: eventId
+        }
+      });
+    }
+
+    getUpcomingEvents(req, res)
   } catch (e: any) {
     console.log(e);
-    res.status(400).send({ error: e.message })
+    res.status(400).send({ error: e.message });
   }
 }
+
+
+interface RemoveAttendeeArgs {
+  userId: string;
+  eventId: string;
+}
+
+export const removeAttendee = async (req: RequestBody<RemoveAttendeeArgs>, res: Response) => {
+  const { userId, eventId } = req.body;
+
+  try {
+    await prisma.attendee.delete({
+      where: {
+        userId_eventId: {
+          userId,
+          eventId
+        }
+      }
+    });
+
+    getUpcomingEvents(req, res);
+  } catch (e: any) {
+    if (e.code === 'P2025') {
+      return res.status(404).send({ error: 'Attendee not found' });
+    }
+
+    console.log(e);
+    res.status(400).send({ error: e.message });
+  }
+}
+
 
 export const getAllEvents = async (_req: Request, res: Response) => {
   try {
@@ -99,7 +156,7 @@ export const getAllEvents = async (_req: Request, res: Response) => {
   }
 }
 
-export const getUpcomingEvents = async (_req: Request<any>, res: Response) => {
+export const getUpcomingEvents = async (_req: RequestBody<any>, res: Response) => {
   try {
     const events = await prisma.event.findMany({
       include: {
@@ -137,7 +194,7 @@ export const getLocations = async (_req: Request, res: Response) => {
   }
 }
 
-export const deleteEvent = async (req: Request<{ id: string }>, res: Response) => {
+export const deleteEvent = async (req: RequestBody<{ id: string }>, res: Response) => {
   try {
     await prisma.event.delete({
       where: {
@@ -152,7 +209,13 @@ export const deleteEvent = async (req: Request<{ id: string }>, res: Response) =
   }
 }
 
-export const updateEvent = async (req: Request<Event>, res: Response) => {
+interface UpdateEventReqBody extends Omit<Event, 'locationId'> {
+  location: {
+    id: string;
+  }
+}
+
+export const updateEvent = async (req: RequestBody<UpdateEventReqBody>, res: Response) => {
   try {
     await prisma.event.update({
       where: {
