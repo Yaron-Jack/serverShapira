@@ -70,10 +70,4 @@ router.get('/transactionStats', transactionStats)
 router.get('/compostStandStats', compostStandStats)
 router.get('/monthlyCompostStandStats', monthlyCompostStandStats)
 
-// CLEANUP
-router.delete('/users', deleteAllusers);
-router.delete('/userByPhoneNumber', deleteUserByPhoneNumber);
-router.delete('/deleteAllCompostStands', deleteAllCompostStands)
-router.post('/addAllCompostStands', addMultipleCompostStands)
-
 export default router;
